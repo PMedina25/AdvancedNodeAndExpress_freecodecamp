@@ -12,17 +12,26 @@ function ConvertHandler() {
     let result = '';
     for (let i = 0; i < input.length; i++) {
       if (isNaN(input[i]) && input[i] !== '/' && input[i] !== '.') {
+        if (i === 0) {
+          break;
+        }
         break;
       }
       result += input[i];
     }
     
-    if (isNaN(Number(result))) {
+    if (isNaN(Number(result)) && result !== "invalid number" && result !== '') {
       let split = result.split('/');
-      result = parseInt(split[0], 10) / parseInt(split[1], 10);
+      if (split.length > 2) {
+        return "invalid number";
+      }
+      result = parseFloat(split[0], 10) / parseFloat(split[1], 10);
     }
     else if (result === '') {
       result = 1;
+    }
+    else if (result === "invalid number") {
+      return result;
     }
     return Number(result);
   };

@@ -37,11 +37,26 @@ app.use(function(req, res, next) {
     .send('Not Found');
 });
 
+let error;
+app.get('/_api/get-tests', cors(), function(req, res, next){
+  if(error || process.env.SKIP_TESTS) 
+    return res.json({status: 'unavailable'});
+  next();
+},
+function(req, res, next){
+  if(!runner.report) return next();
+  res.json(testFilter(runner.report, req.query.type, req.query.n));
+},
+function(req, res){
+  runner.on('done', function(report){
+    process.nextTick(() =>  res.json(testFilter(runner.report, req.query.type, req.query.n)));
+  });
+});
+
 //Start our server and tests!
 app.listen(process.env.PORT || 3000, function () {
   console.log("Listening on port " + process.env.PORT);
-  if(process.env.NODE_ENV==='test') {
-    console.log('Running Tests...');
+  if(!process.env.SKIP_TESTS) {
     setTimeout(function () {
       try {
         runner.run();
@@ -55,3 +70,21 @@ app.listen(process.env.PORT || 3000, function () {
 });
 
 module.exports = app; //for testing
+
+function testFilter(tests, type, n) {
+  var out;
+  switch (type) {
+    case 'unit' :
+      out = tests.filter(t => t.context.match('Unit Tests'));
+      break;
+    case 'functional':
+      out = tests.filter(t => t.context.match('Functional Tests') && !t.title.match('#example'));
+      break;
+    default:
+      out = tests;
+  }
+  if(n !== undefined) {
+    return out[n] || out;
+  }
+  return out;
+}

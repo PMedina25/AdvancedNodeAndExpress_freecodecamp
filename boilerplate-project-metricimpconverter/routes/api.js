@@ -16,7 +16,7 @@ module.exports = function (app) {
   var convertHandler = new ConvertHandler();
 
   app.route('/api/convert')
-    .get(function (req, res){
+    .get(function (req, res) {
       let input = req.query.input;
       let initNum = convertHandler.getNum(input);
       let initUnit = convertHandler.getUnit(input);
@@ -28,7 +28,7 @@ module.exports = function (app) {
         res.json('invalid number and unit');
       }
       else if (returnNum === 'invalid number' && returnUnit !== 'invalid unit') {
-        res.json('invalid unit');
+        res.json('invalid number');
       }
       else if (returnNum !== 'invalid number' && returnUnit === 'invalid unit') {
         res.json('invalid unit');
